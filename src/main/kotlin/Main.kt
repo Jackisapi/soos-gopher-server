@@ -29,7 +29,7 @@ suspend fun main() {
     val port = 7000
     //gopher is usually at post 70 but on Unix and Linux based systems ports under 1024 are reserved unless you are Root
 
-    val serverSocket = aSocket(selectorManager).tcp().bind("127.0.0.1",7000)
+    val serverSocket = aSocket(selectorManager).tcp().bind(ip,port)
     //Creates A Socket at 12.0.0.1 at Port 7000
 
     while (true) {
@@ -53,16 +53,21 @@ suspend fun main() {
 
         println("Server Sent $finalMessage")
 
-        val testMessage = "iThis is a test message"
+        val testMessage = "iThis is a test message \n"
         // i is the gopher formatting to a standard string think of it like the <p> tag
 
-        val testMessage2 = "iDeez Nuts"
+        val testMessage2 = "iDeez Nuts \n"
 
         println("Responding with details $testMessage")
 
         sendChannel.writeFully(sendFormat(testMessage))
         // converts the messages from above to byte arrays in utf-8
         sendChannel.writeFully(sendFormat(testMessage2))
+
+        val fileTest = sendFormat("0TestFile.txt ../resources/thing.txt $ip $port")
+        sendChannel.writeFully(fileTest)
+        socket.close()
+
 
     }
 }
