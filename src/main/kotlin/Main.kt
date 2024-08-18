@@ -5,6 +5,20 @@ import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.Dispatchers
 
+//Conversion needed to send data to the gopher server
+fun sendFormat(string: String): ByteArray{
+    val message = string.toByteArray(Charsets.UTF_8)
+    return message
+}
+
+//Conversion needed to receive data from the gopher server
+fun receiveFormat(byte: Byte): Char{
+    val message = byte.toInt().toChar()
+    return message
+}
+
+
+
 suspend fun main() {
     val selectorManager = SelectorManager(Dispatchers.IO)
 
@@ -34,21 +48,21 @@ suspend fun main() {
 
         val message = receiveChannel.readByte()
 
-        val finalMessage = message.toInt().toChar()
+        val finalMessage = receiveFormat(message)
         //Converts the message to a character in this case a  (Note change code to allow full strings later)
 
         println("Server Sent $finalMessage")
 
-        val testMessage = "iThis is a test message \n"
+        val testMessage = "iThis is a test message"
         // i is the gopher formatting to a standard string think of it like the <p> tag
 
-        val testMessage2 = "iDeez Nuts \n"
+        val testMessage2 = "iDeez Nuts"
 
         println("Responding with details $testMessage")
 
-        sendChannel.writeFully(testMessage.toByteArray(charset("utf-8")))
+        sendChannel.writeFully(sendFormat(testMessage))
         // converts the messages from above to byte arrays in utf-8
-        sendChannel.writeFully(testMessage2.toByteArray(charset("utf-8")))
+        sendChannel.writeFully(sendFormat(testMessage2))
 
     }
 }
