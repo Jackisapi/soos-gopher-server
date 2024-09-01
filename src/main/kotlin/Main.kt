@@ -3,6 +3,7 @@ package xyz.chilll
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
+import io.ktor.utils.io.errors.*
 import kotlinx.coroutines.Dispatchers
 
 //Conversion needed to send data to the gopher server
@@ -31,44 +32,51 @@ suspend fun main() {
 
     val serverSocket = aSocket(selectorManager).tcp().bind(ip,port)
     //Creates A Socket at 12.0.0.1 at Port 7000
-
-    while (true) {
-        // Allows Client to accept Socket
-        val socket = serverSocket.accept()
-
-
-        println("server Connected gopher://$ip:$port")
+    try {
+        while (true) {
+            // Allows Client to accept Socket
+            val socket = serverSocket.accept()
 
 
-        val sendChannel = socket.openWriteChannel(autoFlush = true)
-        // Sets up the send channel this is where the server will send data to the client
-
-        val receiveChannel = socket.openReadChannel()
-        // Receive channel this is for Client to Server
-
-        val message = receiveChannel.readByte()
-
-        val finalMessage = receiveFormat(message)
-        //Converts the message to a character in this case a  (Note change code to allow full strings later)
-
-        println("Server Sent $finalMessage")
-
-        val testMessage = "iThis is a test message \n"
-        // i is the gopher formatting to a standard string think of it like the <p> tag
-
-        val testMessage2 = "iDeez Nuts \n"
-
-        println("Responding with details $testMessage")
-
-        sendChannel.writeFully(sendFormat(testMessage))
-        // converts the messages from above to byte arrays in utf-8
-        sendChannel.writeFully(sendFormat(testMessage2))
-
-        val fileTest = sendFormat("0TestFile.txt ../resources/thing.txt $ip $port")
-        sendChannel.writeFully(fileTest)
-        socket.close()
+            println("server Connected gopher://$ip:$port")
 
 
+            val sendChannel = socket.openWriteChannel(autoFlush = true)
+            // Sets up the send channel this is where the server will send data to the client
+
+            val receiveChannel = socket.openReadChannel()
+            // Receive channel this is for Client to Server
+
+            val message = receiveChannel.readByte()
+
+            val finalMessage = receiveFormat(message)
+            //Converts the message to a character in this case a  (Note change code to allow full strings later)
+
+            println("Server Sent $finalMessage")
+
+            val testMessage = "iThis is a test message \n"
+            // i is the gopher formatting to a standard string think of it like the <p> tag
+
+            val testMessage2 = "iDeez Nuts \n"
+
+            println("Responding with details $testMessage")
+
+            sendChannel.writeFully(sendFormat(testMessage))
+            // converts the messages from above to byte arrays in utf-8
+            sendChannel.writeFully(sendFormat(testMessage2))
+
+            println("Sending File ")
+            val fileTest = sendFormat("0TestFile thing.txt $ip")
+            sendChannel.writeFully(fileTest)
+
+//            socket.close()
+        }
+
+    } catch (e: IOException) {
+        println("IO Error Occured ${e.message}")
+    }catch (e: Exception) {
+        println("Unknown error ${e.message}")
     }
+
 }
 
